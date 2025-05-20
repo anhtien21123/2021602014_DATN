@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh Thống Số - Hệ Thống Phân Tích Bóng Đá</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .main-container {
+            max-width: 1100px;
+            margin: 2rem auto;
+        }
+        .title {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            color: #212529;
+        }
+        .card {
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .btn-back {
+            margin-bottom: 1rem;
+        }
+        .stat-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        .team-A, .team-1 {
+            color: #ff5733;
+        }
+        .team-B, .team-2 {
+            color: #005aa7;
+        }
+        .team-header {
+            background-color: #f1f3f5;
+            padding: 10px 15px;
+            border-radius: 8px 8px 0 0;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .comparison-title {
+            text-align: center;
+            margin: 1.5rem 0;
+            font-weight: 600;
+            color: #495057;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f3f5;
+        }
+        .stat-category {
+            text-align: center;
+            font-weight: 600;
+            margin-top: 1rem;
+            margin-bottom: 0.8rem;
+            color: #6c757d;
+            font-size: 1.1rem;
+        }
+        .progress {
+            height: 8px;
+            margin-top: 0.3rem;
+            background-color: #e9ecef;
+        }
+        .bg-danger {
+            background-color: #dc3545 !important;
+        }
+        .bg-primary {
+            background-color: #007bff !important;
+        }
+        .progress-bar {
+            display: block;
+            height: 100%;
+            float: left;
+        }
+        .comparison-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .team-stat {
+            width: 40%;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        .stat-bar {
+            width: 20%;
+            padding: 0 10px;
+        }
+        .team-1-bg {
+            background-color: rgba(255, 87, 51, 0.1);
+        }
+        .team-2-bg {
+            background-color: rgba(0, 90, 167, 0.1);
+        }
+        /* CSS cho video */
+        .video-container {
+            margin: 20px 0;
+            text-align: center;
+            position: relative;
+            width: 100%;
+        }
+        .video-player {
+            width: 100%;
+            max-width: 960px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        /* Đảm bảo không có phần tử đen che khuất video */
+        .video-player::before, 
+        .video-player::after {
+            content: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container main-container">
+        <h1 class="title">So Sánh Thống Số</h1>
+        
+        <a href="/" class="btn btn-secondary btn-back">← Quay lại</a>
+        
+        <!-- Thêm phần hiển thị video -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Video phân tích</h5>
+            </div>
+            <div class="card-body">
+                <div class="video-container">
+                    <a href="/results" class="btn btn-primary mb-3">Xem video phân tích</a>
+                    <p class="text-muted">Nhấn nút trên để xem video phân tích với thông tin chi tiết về cầu thủ</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>So sánh giữa các đội</h5>
+            </div>
+            <div class="card-body">
+                {% if team_stats %}
+                    {% set team_keys = team_stats.keys()|list %}
+                    {% if team_keys|length >= 2 %}
+                        {% set team1 = team_keys[0] %}
+                        {% set team2 = team_keys[1] %}
+                        
+                        <h4 class="comparison-title">Thống kê chi tiết</h4>
+                        
+                        <!-- Chỉ số chiến thuật -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h6 class="mb-0">Chỉ số chiến thuật</h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Kiểm soát bóng -->
+                                <div class="comparison-row">
+                                    <div class="team-stat team-1-bg">
+                                        <span class="stat-value">{{ "%.1f"|format(team_stats[team1].get('total_possession', 0) * 100) }}%</span>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-label mb-1 text-center">Kiểm soát bóng</div>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" style="width: {{ team_stats[team1].get('total_possession', 0) * 100 }}%"></div>
+                                            <div class="progress-bar bg-primary" style="width: {{ team_stats[team2].get('total_possession', 0) * 100 }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="team-stat team-2-bg">
+                                        <span class="stat-value">{{ "%.1f"|format(team_stats[team2].get('total_possession', 0) * 100) }}%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chỉ số kỹ thuật -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Chỉ số kỹ thuật</h6>
+                            </div>
+                            <div class="card-body">
+                                <!-- Tổng quãng đường -->
+                                <div class="comparison-row">
+                                    <div class="team-stat team-1-bg">
+                                        <span class="stat-value">{{ "%.1f"|format(team_stats[team1].total_distance) }}</span>
+                                        <div class="stat-label">mét</div>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-label mb-1 text-center">Tổng quãng đường di chuyển</div>
+                                        <div class="progress">
+                                            {% set total_distance = team_stats[team1].total_distance + team_stats[team2].total_distance %}
+                                            {% set team1_percent = (team_stats[team1].total_distance / total_distance * 100) if total_distance > 0 else 50 %}
+                                            <div class="progress-bar bg-danger" style="width: {{ team1_percent }}%"></div>
+                                            <div class="progress-bar bg-primary" style="width: {{ 100 - team1_percent }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="team-stat team-2-bg">
+                                        <span class="stat-value">{{ "%.1f"|format(team_stats[team2].total_distance) }}</span>
+                                        <div class="stat-label">mét</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quãng đường trung bình/cầu thủ -->
+                                <!-- <div class="comparison-row">
+                                    <div class="team-stat team-1-bg">
+                                        <span class="stat-value">{{ "%.1f"|format(team_stats[team1].avg_distance) }}</span>
+                                        <div class="stat-label">mét</div>
+                                    </div>
+                                    <div class="stat-bar">
+                                        <div class="stat-label mb-1 text-center">Quãng đường TB / cầu thủ</div>
+                                        <div class="progress">
+                                            {% set total_avg = team_stats[team1].avg_distance + team_stats[team2].avg_distance %}
+                                            {% set team1_percent = (team_stats[team1].avg_distance / total_avg * 100) if total_avg > 0 else 50 %}
+                                            <div class="progress-bar bg-danger" style="width: {{ team1_percent }}%"></div>
+                                            <div class="progress-bar bg-primary" style="width: {{ 100 - team1_percent }}%"></div>
+                                        </div>
+                                    </div>
+                                    <div class="team-stat team-2-bg">
+                                        <span class="stat-value">{{ "%.1f"|format(team_stats[team2].avg_distance) }}</span>
+                                        <div class="stat-label">mét</div>
+                                    </div>
+                                </div> -->
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            Cần ít nhất hai đội để so sánh thống kê. Hiện tại chỉ có {{ team_keys|length }} đội.
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-warning">
+                        Chưa có dữ liệu thống kê. Vui lòng chạy phân tích video trước.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="mt-4 text-center">
+            <a href="/results" class="btn btn-primary">Xem thông số chi tiết</a>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
